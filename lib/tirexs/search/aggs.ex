@@ -20,6 +20,9 @@ defmodule Tirexs.Search.Aggs do
   @doc false
   def transpose(block) do
     case block do
+      {:size, _, [params]}            -> size(params)
+      {:sort, _, [field, params]}     -> sort(field, params)
+      {:_source, _, [params]}         -> _source(params) 
       {:term_stats, _, [a,b]}         -> term_stats(a, b)
       {:terms, _, [params]}           -> terms(params)
       {:term, _, [field, value]}      -> term(field, value)
@@ -27,11 +30,37 @@ defmodule Tirexs.Search.Aggs do
       {:histogram, _, [params]}       -> histogram(params)
       {:date_histogram, _, [params]}  -> date_histogram(params)
       {:geo_distance, _, [params]}    -> geo_distance(params)
-      {:range, _, [params]}           -> range(params)
+      {:range, _, [field, params]}    -> range(field, params)
       {:nested, _, [params]}          -> nested(params)
+      {:must, _, [params]}            -> must(params[:do])
       {name, _, [params]}             -> _aggs(name, params[:do])
       {name, _, params}               -> _aggs(name, params)
     end
+  end
+  
+  @doc false
+  def _source(fields) do
+    [_source: fields]
+  end
+  
+  @doc false
+  def size(size) do
+    [size: size]
+  end
+
+  @doc false
+  def sort(field, options) do
+    [sort: [{to_atom(field), options}]]
+  end
+
+  @doc false
+  def must(block) do
+    [must: to_array(extract(block))]
+  end
+
+  @doc false
+  def range(field, options) do
+    [range: [{to_atom(field), options}]]
   end
 
   @doc false
@@ -70,11 +99,6 @@ defmodule Tirexs.Search.Aggs do
   end
 
   @doc false
-  def range(options) do
-    [range: options]
-  end
-
-  @doc false
   def nested(params) do
     [nested: params]
   end
@@ -96,4 +120,5 @@ defmodule Tirexs.Search.Aggs do
       _                         -> [ {to_atom(name), extract(body)} ]
     end
   end
+
 end
