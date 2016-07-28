@@ -46,6 +46,7 @@ defmodule Tirexs.Search do
   @doc false
   def transpose(block) do
     case block do
+      {:_source, _, [params]}       -> _source(params)
       {:query, _, [params]}         -> Query._query(params[:do])
       {:query, _, options}          -> Query._query(options)
       {:filter, _, [params]}        -> Filter._filter(params[:do])
@@ -64,6 +65,11 @@ defmodule Tirexs.Search do
     end
   end
 
+  @doc false
+  def _source(fields) do
+    [_source: fields]
+  end
+ 
   @doc false
   def filters(params, _opts) do
     [filter: params]
